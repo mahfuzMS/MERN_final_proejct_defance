@@ -1,27 +1,32 @@
+
+const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 
-const auth = (req, res, next) => {
-    const token = req.header("Authorization")?.replace("Bearer ", "");
-    if (!token) {
-        return res.status(401).json({ error: "No token provided" });
-    }
+ const userAuthVerify = (req, res, next) => {
+	const token = req.cookies.token;
+	
+	if (!token) return res.status(401).json({ success: false, message: "Unauthorized - no token provided" });
+	try {
+		const decoded = jwt.verify(token, process.env.JWT_SECRET);
+		if (!decoded) return res.status(401).json({ success: false, message: "Unauthorized - invalid token" });
 
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded; // Attach user data to request
-        next();
-    } catch (error) {
-        res.status(401).json({ error: "Invalid token" });
-    }
+		req.userId = decoded.userId;
+		next();
+	} catch (error) {
+		console.log("Error in verifyToken ", error.message);
+		return res.status(500).json({ success: false, message: "Server error" });
+	}
 };
+
 
 const adminAuth = (req, res, next) => {
-    auth(req, res, () => {
-        if (req.user.role !== "admin") {
-            return res.status(403).json({ error: "Admin access required" });
-        }
-        next();
-    });
+    const userId = req.userId;
+    const user = User.find(user => user.id === userId);
+    if (!user || user.role !== 'admin') {
+        return res.status(403).json({ success: false, message: "Unauthorized - admin role required" });
+    }
+    next();
+
 };
 
-module.exports = { auth, adminAuth };
+module.exports = { userAuthVerify, adminAuth };
