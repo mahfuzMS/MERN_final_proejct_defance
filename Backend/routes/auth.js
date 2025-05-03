@@ -1,0 +1,25 @@
+const express = require("express");
+const router = express.Router();
+const { register, verifyEmail, login, checkAuth, forgetPassword, resetPassword } = require("../controller/auth.controller");
+
+const { userAuthVerify } = require("../middleware/auth");
+
+// Register
+router.post("/register", register);
+
+// Verify Email
+router.get("/verify/:token", verifyEmail);
+
+// Login
+router.post("/login", login);   
+
+// user check
+router.get("/check", userAuthVerify, checkAuth);
+
+// Password Reset Request
+router.post("/forgot-password", forgetPassword);
+
+// Password Reset
+router.post("/reset/:token", resetPassword);
+
+module.exports = router;
