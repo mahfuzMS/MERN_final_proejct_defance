@@ -17,9 +17,9 @@ router.post("/login", login);
 router.get("/check", userAuthVerify, checkAuth);
 
 // Password Reset Request
-router.post("/forgot-password", forgetPassword);
+router.post("/forgot-password/:token", forgetPassword);
 
 // Password Reset
-router.post("/reset/:token", resetPassword);
+router.post("/reset", resetPassword);
 
 module.exports = router;

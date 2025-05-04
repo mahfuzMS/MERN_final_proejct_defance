@@ -12,7 +12,6 @@ const postSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     dislikes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    isSuspended: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model("Post", postSchema);
