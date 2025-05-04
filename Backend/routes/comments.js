@@ -1,24 +1,23 @@
 const express = require("express");
 const router = express.Router();
-const Comment = require("../models/Comment");
-const Post = require("../models/Post");
+const Comment = require("../models/comment");
+const Post = require("../models/post");
 const { auth, adminAuth } = require("../middleware/auth");
 
 // Create comment
-router.post("/:postId", auth, async (req, res) => {
-    const { content } = req.body;
+router.post("/", async (req, res) => {
+    const { commentWithPost, postId, userId } = req.body;
     try {
-        const post = await Post.findById(req.params.postId);
-        if (!post || post.isSuspended) {
+        const post = await Post.findById(postId);
+        if (!post) {
             return res.status(404).json({ error: "Post not found" });
         }
-        const comment = new Comment({
-            content,
-            post: req.params.postId,
-            author: req.user.userId,
+        const Postcomment = await Comment.create({
+            commentWithPost,
+            post: postId,
+            author: userId,
         });
-        await comment.save();
-        res.status(201).json(comment);
+        res.status(201).json({ message: "Comment created", Postcomment });
     } catch (error) {
         res.status(500).json({ error: "Server error" });
     }

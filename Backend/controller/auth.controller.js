@@ -26,6 +26,8 @@ const register = async (req, res) => {
       gender
     });
 
+    sendVerificationEmail(email, verificationToken);
+
     console.log(newUser);
     res.status(201).json({
       message: "User registered. Check your email to verify.",
@@ -74,16 +76,18 @@ const login = async (req, res) => {
 }
 
 const resetPassword = async (req, res) => {
+  
   const { email } = req.body;
+
   try {
-    const user = await User.findOne({ email });
-    if (!user) {
+    const exitingUser = await User.findOne({ email });
+    if (!exitingUser) {
       return res.status(400).json({ error: "Email not found" });
     }
     const resetToken = Math.random().toString(36).substring(2);
-    user.resetToken = resetToken;
-    user.resetTokenExpiry = Date.now() + 3600000; // 1 hour
-    await user.save();
+    exitingUser.resetToken = resetToken;
+    exitingUser.resetTokenExpiry = Date.now() + 3600000; // 1 hour
+    await exitingUser.save();
     await sendResetEmail(email, resetToken);
     res.json({ message: "Password reset email sent" });
   } catch (error) {
