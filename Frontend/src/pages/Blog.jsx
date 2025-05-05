@@ -1,52 +1,124 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 export default function Blog() {
     const [posts, setPosts] = useState([]);
     const [newPost, setNewPost] = useState("");
     const [comments, setComments] = useState({});
-    const [likes, setLikes] = useState({});
-    const [dislikes, setDislikes] = useState({});
+    const [userId, setUserId] = useState("123"); // Replace with actual logged-in user ID
 
-    // Function to handle new post submission
-    const handleAddPost = () => {
-        const post = {
-            id: posts.length + 1,
-            content: newPost,
-        };
-        setPosts([...posts, post]);
-        setNewPost("");
+    // Fetch all posts for the current user
+    const fetchPosts = async () => {
+        try {
+            const res = await fetch(`http://localhost:8000/api/posts/user?userId=${userId}`);
+            const data = await res.json();
+            setPosts(data.posts || []);
+        } catch (err) {
+            console.error("Error fetching posts", err);
+        }
     };
 
-    // Function to handle post deletion
-    const handleDeletePost = (id) => {
-        setPosts(posts.filter((post) => post.id !== id));
+    useEffect(() => {
+        fetchPosts();
+    }, []);
+
+    // Create a new post
+    const handleAddPost = async () => {
+        try {
+            const res = await fetch("http://localhost:8000/api/posts/create", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    title: "Untitled Post",
+                    content: newPost,
+                    imageUrl: "",
+                    userId,
+                }),
+            });
+
+            if (res.ok) {
+                setNewPost("");
+                fetchPosts();
+            }
+        } catch (err) {
+            console.error("Error creating post", err);
+        }
     };
 
-    // Function to handle editing posts
-    const handleEditPost = (id, newContent) => {
-        setPosts(
-            posts.map((post) =>
-                post.id === id ? { ...post, content: newContent } : post
-            )
-        );
+    // Delete a post
+    const handleDeletePost = async (postId) => {
+        try {
+            const res = await fetch(`http://localhost:8000/api/posts/user/delete/${postId}`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId }),
+            });
+
+            if (res.ok) {
+                fetchPosts();
+            }
+        } catch (err) {
+            console.error("Error deleting post", err);
+        }
     };
 
-    // Function to add a comment
+    // Edit post content
+    const handleEditPost = async (id, newContent) => {
+        try {
+            const post = posts.find((p) => p._id === id);
+            await fetch("http://localhost:8000/api/posts/user/update", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    title: post.title,
+                    content: newContent,
+                    imageUrl: post.imageUrl || "",
+                    postId: id,
+                    userId,
+                }),
+            });
+
+            fetchPosts();
+        } catch (err) {
+            console.error("Error editing post", err);
+        }
+    };
+
+    // Add comment (local only unless you build a comment API)
     const handleAddComment = (id, comment) => {
-        setComments({
-            ...comments,
-            [id]: [...(comments[id] || []), comment],
-        });
+        setComments((prev) => ({
+            ...prev,
+            [id]: [...(prev[id] || []), comment],
+        }));
     };
 
-    // Function to handle like action
-    const handleLike = (id) => {
-        setLikes({ ...likes, [id]: (likes[id] || 0) + 1 });
+    // Like a post
+    const handleLike = async (postId) => {
+        try {
+            await fetch("http://localhost:8000/api/posts/like", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ postId, userId }),
+            });
+            fetchPosts();
+        } catch (err) {
+            console.error("Error liking post", err);
+        }
     };
 
-    // Function to handle dislike action
-    const handleDislike = (id) => {
-        setDislikes({ ...dislikes, [id]: (dislikes[id] || 0) + 1 });
+    // Dislike a post
+    const handleDislike = async (postId) => {
+        try {
+            await fetch("http://localhost:8000/api/posts/dislike", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ postId, userId }),
+            });
+            fetchPosts();
+        } catch (err) {
+            console.error("Error disliking post", err);
+        }
     };
 
     return (
@@ -56,7 +128,7 @@ export default function Blog() {
                     Blog Posts
                 </h1>
 
-                {/* Post Input Form */}
+                {/* Post Input */}
                 <div className="mb-6">
                     <textarea
                         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#d62300]"
@@ -73,10 +145,10 @@ export default function Blog() {
                     </button>
                 </div>
 
-                {/* Display Posts */}
+                {/* Posts Display */}
                 {posts.length > 0 ? (
                     posts.map((post) => (
-                        <div key={post.id} className="mb-8">
+                        <div key={post._id} className="mb-8">
                             <div className="bg-[#f9f5ec] p-4 rounded-lg shadow-md">
                                 <div className="flex justify-between items-center mb-4">
                                     <div className="text-lg font-semibold text-[#885133]">
@@ -84,7 +156,7 @@ export default function Blog() {
                                     </div>
                                     <button
                                         onClick={() =>
-                                            handleDeletePost(post.id)
+                                            handleDeletePost(post._id)
                                         }
                                         className="text-red-500 hover:text-red-700"
                                     >
@@ -92,33 +164,32 @@ export default function Blog() {
                                     </button>
                                 </div>
 
-                                {/* Edit Post */}
+                                {/* Edit */}
                                 <textarea
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#d62300] mb-4"
-                                    placeholder="Edit your post..."
-                                    onChange={(e) =>
-                                        handleEditPost(post.id, e.target.value)
+                                    defaultValue={post.content}
+                                    onBlur={(e) =>
+                                        handleEditPost(post._id, e.target.value)
                                     }
-                                    rows="2"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#d62300] mb-4"
                                 />
 
-                                {/* Like and Dislike Buttons */}
+                                {/* Likes/Dislikes */}
                                 <div className="flex items-center space-x-4 mb-4">
                                     <button
-                                        onClick={() => handleLike(post.id)}
+                                        onClick={() => handleLike(post._id)}
                                         className="bg-[#885133] text-white py-1 px-4 rounded-md hover:bg-[#d62300]"
                                     >
-                                        Like ({likes[post.id] || 0})
+                                        Like ({post.likes?.length || 0})
                                     </button>
                                     <button
-                                        onClick={() => handleDislike(post.id)}
+                                        onClick={() => handleDislike(post._id)}
                                         className="bg-[#885133] text-white py-1 px-4 rounded-md hover:bg-[#d62300]"
                                     >
-                                        Dislike ({dislikes[post.id] || 0})
+                                        Dislike ({post.dislikes?.length || 0})
                                     </button>
                                 </div>
 
-                                {/* Comment Section */}
+                                {/* Comments */}
                                 <div className="mb-4">
                                     <textarea
                                         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#d62300]"
@@ -126,7 +197,7 @@ export default function Blog() {
                                         onKeyDown={(e) => {
                                             if (e.key === "Enter") {
                                                 handleAddComment(
-                                                    post.id,
+                                                    post._id,
                                                     e.target.value
                                                 );
                                                 e.target.value = "";
@@ -134,17 +205,16 @@ export default function Blog() {
                                         }}
                                     />
                                     <div className="mt-2">
-                                        {comments[post.id] &&
-                                            comments[post.id].map(
-                                                (comment, idx) => (
-                                                    <div
-                                                        key={idx}
-                                                        className="p-2 bg-[#f9f5ec] rounded-lg mb-2"
-                                                    >
-                                                        {comment}
-                                                    </div>
-                                                )
-                                            )}
+                                        {comments[post._id]?.map(
+                                            (comment, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    className="p-2 bg-[#f9f5ec] rounded-lg mb-2"
+                                                >
+                                                    {comment}
+                                                </div>
+                                            )
+                                        )}
                                     </div>
                                 </div>
                             </div>

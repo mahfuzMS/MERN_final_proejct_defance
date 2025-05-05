@@ -5,6 +5,8 @@ import Blog from "../pages/Blog";
 import Login from "../components/Login";
 import Dashboard from "../pages/Dashboard";
 import Registration from "../components/Registration";
+import ProtectedRoute from "../Route/ProtectedRoute";
+import ForgotPassword from "../pages/Forgote";
 // import App from "../App";
 
 const router = createBrowserRouter([
@@ -23,6 +25,11 @@ const router = createBrowserRouter([
             },
             {
                 path: "dashboard",
+                // element: (
+                //     <ProtectedRoute>
+                //         <Dashboard />
+                //     </ProtectedRoute>
+                // ),
                 element: <Dashboard />,
             },
             {
@@ -32,6 +39,10 @@ const router = createBrowserRouter([
             {
                 path: "register",
                 element: <Registration />,
+            },
+            {
+                path: "forgetPassword",
+                element: <ForgotPassword />,
             },
         ],
     },
