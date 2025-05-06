@@ -5,7 +5,7 @@ const { register, verifyEmail, login, checkAuth, forgetPassword, resetPassword }
 const { userAuthVerify } = require("../middleware/auth");
 
 // Register
-router.post("/register", register);
+router.post("/signup", register);
 
 // Verify Email
 router.get("/verify/:token", verifyEmail);
