@@ -2,7 +2,7 @@ const comment = require("../models/comment");
 const Post = require("../models/post");
 
 const PostCreate = async (req, res) => {
-  const { title, content, imageUrl, userId } = req.body;
+  const { title, content, imageUrl, userId} = req.body;
   try {
     const post = await Post.create({
       title,
