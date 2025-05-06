@@ -1,161 +1,94 @@
-import React, { useState } from "react";
+import { FiClock, FiUser, FiHeart, FiThumbsDown, FiTag } from 'react-icons/fi';
+import { motion } from 'framer-motion';
 
-export default function Blog() {
-    const [posts, setPosts] = useState([]);
-    const [newPost, setNewPost] = useState("");
-    const [comments, setComments] = useState({});
-    const [likes, setLikes] = useState({});
-    const [dislikes, setDislikes] = useState({});
+const PostCard = ({ post }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="relative bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden 
+                 hover:shadow-xl transition-shadow duration-300 group"
+    >
+      {/* Feature Image */}
+      {post.featureImage && (
+        <img 
+          src={post.featureImage} 
+          alt={post.title}
+          className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+      )}
 
-    // Function to handle new post submission
-    const handleAddPost = () => {
-        const post = {
-            id: posts.length + 1,
-            content: newPost,
-        };
-        setPosts([...posts, post]);
-        setNewPost("");
-    };
+      <div className="p-6">
+        {/* Category Badge */}
+        <span className="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 
+                         text-sm px-3 py-1 rounded-full mb-4">
+          {post.catagory}
+        </span>
 
-    // Function to handle post deletion
-    const handleDeletePost = (id) => {
-        setPosts(posts.filter((post) => post.id !== id));
-    };
+        {/* Title */}
+        <h3 className="text-xl font-bold mb-2 text-gray-800 dark:text-gray-100 hover:text-blue-600 
+                      dark:hover:text-blue-400 transition-colors">
+          {post.title}
+        </h3>
 
-    // Function to handle editing posts
-    const handleEditPost = (id, newContent) => {
-        setPosts(
-            posts.map((post) =>
-                post.id === id ? { ...post, content: newContent } : post
-            )
-        );
-    };
+        {/* Content Excerpt */}
+        <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
+          {post.content}
+        </p>
 
-    // Function to add a comment
-    const handleAddComment = (id, comment) => {
-        setComments({
-            ...comments,
-            [id]: [...(comments[id] || []), comment],
-        });
-    };
-
-    // Function to handle like action
-    const handleLike = (id) => {
-        setLikes({ ...likes, [id]: (likes[id] || 0) + 1 });
-    };
-
-    // Function to handle dislike action
-    const handleDislike = (id) => {
-        setDislikes({ ...dislikes, [id]: (dislikes[id] || 0) + 1 });
-    };
-
-    return (
-        <div className="min-h-screen bg-[#f0e6d7] p-8">
-            <div className="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-xl">
-                <h1 className="text-3xl font-bold text-center text-[#885133] mb-8">
-                    Blog Posts
-                </h1>
-
-                {/* Post Input Form */}
-                <div className="mb-6">
-                    <textarea
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#d62300]"
-                        placeholder="Write a new post..."
-                        value={newPost}
-                        onChange={(e) => setNewPost(e.target.value)}
-                        rows="4"
-                    />
-                    <button
-                        onClick={handleAddPost}
-                        className="mt-4 bg-[#885133] text-white py-2 px-4 rounded-md hover:bg-[#d62300] transition duration-300"
-                    >
-                        Post
-                    </button>
-                </div>
-
-                {/* Display Posts */}
-                {posts.length > 0 ? (
-                    posts.map((post) => (
-                        <div key={post.id} className="mb-8">
-                            <div className="bg-[#f9f5ec] p-4 rounded-lg shadow-md">
-                                <div className="flex justify-between items-center mb-4">
-                                    <div className="text-lg font-semibold text-[#885133]">
-                                        {post.content}
-                                    </div>
-                                    <button
-                                        onClick={() =>
-                                            handleDeletePost(post.id)
-                                        }
-                                        className="text-red-500 hover:text-red-700"
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
-
-                                {/* Edit Post */}
-                                <textarea
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#d62300] mb-4"
-                                    placeholder="Edit your post..."
-                                    onChange={(e) =>
-                                        handleEditPost(post.id, e.target.value)
-                                    }
-                                    rows="2"
-                                />
-
-                                {/* Like and Dislike Buttons */}
-                                <div className="flex items-center space-x-4 mb-4">
-                                    <button
-                                        onClick={() => handleLike(post.id)}
-                                        className="bg-[#885133] text-white py-1 px-4 rounded-md hover:bg-[#d62300]"
-                                    >
-                                        Like ({likes[post.id] || 0})
-                                    </button>
-                                    <button
-                                        onClick={() => handleDislike(post.id)}
-                                        className="bg-[#885133] text-white py-1 px-4 rounded-md hover:bg-[#d62300]"
-                                    >
-                                        Dislike ({dislikes[post.id] || 0})
-                                    </button>
-                                </div>
-
-                                {/* Comment Section */}
-                                <div className="mb-4">
-                                    <textarea
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#d62300]"
-                                        placeholder="Add a comment..."
-                                        onKeyDown={(e) => {
-                                            if (e.key === "Enter") {
-                                                handleAddComment(
-                                                    post.id,
-                                                    e.target.value
-                                                );
-                                                e.target.value = "";
-                                            }
-                                        }}
-                                    />
-                                    <div className="mt-2">
-                                        {comments[post.id] &&
-                                            comments[post.id].map(
-                                                (comment, idx) => (
-                                                    <div
-                                                        key={idx}
-                                                        className="p-2 bg-[#f9f5ec] rounded-lg mb-2"
-                                                    >
-                                                        {comment}
-                                                    </div>
-                                                )
-                                            )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <p className="text-center text-[#885133]">
-                        No posts available
-                    </p>
-                )}
-            </div>
+        {/* Metadata */}
+        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex items-center gap-1">
+            <FiUser className="flex-shrink-0" />
+            <span>{post.author.name}</span>
+          </div>
+          
+          <div className="flex items-center gap-1">
+            <FiClock />
+            <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+          </div>
+          
+          <div className="flex items-center gap-1">
+            <FiClock />
+            <span>{post.readTime} read</span>
+          </div>
         </div>
-    );
-}
+
+        {/* Tags */}
+        {post.tags?.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {post.tags.map(tag => (
+              <span 
+                key={tag}
+                className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md text-sm"
+              >
+                <FiTag className="text-xs" />
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Like/Dislike Section */}
+        <div className="mt-4 flex items-center gap-4 border-t pt-4 border-gray-100 dark:border-gray-700">
+          <div className="flex items-center gap-1 text-gray-600 dark:text-gray-300">
+            <button className="hover:text-red-500 transition-colors">
+              <FiHeart className="w-5 h-5" />
+            </button>
+            <span>{post.likes.length}</span>
+          </div>
+          
+          <div className="flex items-center gap-1 text-gray-600 dark:text-gray-300">
+            <button className="hover:text-blue-500 transition-colors">
+              <FiThumbsDown className="w-5 h-5" />
+            </button>
+            <span>{post.dislikes.length}</span>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+export default PostCard;

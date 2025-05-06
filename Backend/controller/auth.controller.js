@@ -3,7 +3,6 @@ const bcrypt = require("bcrypt");
 const { sendVerificationEmail, sendResetEmail } = require("../utilities/email");
 const { generateTokenAndSetCookie } = require("../utilities/userAuthToken");    
  
-
 const register = async (req, res) => {
   const { email, password, name, gender } = req.body;
   console.log(req.body);
@@ -56,9 +55,17 @@ const verifyEmail = async (req, res) => {
 
 const login = async (req, res) => {
   const { email, password } = req.body;
+  console.log(req.body);
   try {
     const user = await User.findOne({ email });
-    if (!user || !user.isVerified) {
+
+    if (!user.isVerified) {
+      return res.status(400).json({ error: "Email not verified" });
+    }
+    
+    if (!user) {
+          console.log("Invalid credentials");
+          
       return res
         .status(400)
         .json({ error: "Invalid credentials or email not verified" });
@@ -68,7 +75,8 @@ const login = async (req, res) => {
       return res.status(400).json({ error: "Invalid credentials" });
     }
    const token = await generateTokenAndSetCookie(res, user._id);
-    res.json({ message: "Login successful" , token });
+   console.log(token);
+   return res.json({ message: "Login successful" , token });
   } catch (error) {
     console.error("Login error:", error); // Add this line
     res.status(500).json({ error: "Server error" });
@@ -117,7 +125,6 @@ const forgetPassword = async (req, res) => {
   }
 }
 
-
 const checkAuth = async (req, res) => {
   try {
     const user = await User.findById(req.userId).select("-password");
@@ -134,6 +141,5 @@ const logout = async (req, res) => {
   res.clearCookie("token");
   res.json({ message: "Logout successful" });
 }
-
 
 module.exports = { register, login, verifyEmail, resetPassword, forgetPassword, logout, checkAuth };
