@@ -1,13 +1,34 @@
 const express = require("express");
 const { PostCreate, adminAllPosts, userAllPosts, userSinglePostDelete, userPostUpdate, postLike, postDisLike, allPostSearch } = require("../controller/post.controller");
+const { userAuthVerify } = require("../middleware/auth");
 const router = express.Router();
-
+const multer = require('multer');
+// ---------------------------
+//      Multer Configuration
+// ---------------------------
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) => {
+      cb(null, Date.now() + '-' + file.originalname);
+    }
+  });
+  
+  const upload = multer({ 
+    storage: storage,
+    fileFilter: (req, file, cb) => {
+      if(file.mimetype.startsWith('image/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only images are allowed!'), false);
+      }
+    }
+  });
 
 
 // Create post
-router.post("/", PostCreate);
-
-// comment on post
+router.post("/", userAuthVerify, upload.single('featureImage'), PostCreate);
 
 
 // Get all posts

@@ -1,18 +1,39 @@
 const comment = require("../models/comment");
 const Post = require("../models/post");
 
+// const PostCreate = async (req, res) => {
+//   const { title, content, imageUrl, userId} = req.body;
+//   try {
+//     const post = await Post.create({
+//       title,
+//       content,
+//       imageUrl,
+//       author: userId,
+//     });
+//     res.status(201).json({ message: "Post created", post });
+//   } catch (error) {
+//     res.status(500).json({ error: "Server error" });
+//   }
+// };
+
 const PostCreate = async (req, res) => {
-  const { title, content, imageUrl, userId} = req.body;
+  const { title, content, status, catagory, tags,} = req.body;
+  
   try {
-    const post = await Post.create({
-      title,
-      content,
-      imageUrl,
-      author: userId,
+   await Post.create({
+       tag: req.body.tags,
+       title: req.body.title,
+      content: req.body.content,
+      status: req.body.status,
+      catagory: req.body.category,
+      author: req.userId,
+      featureImage: req.file ? `/uploads/${req.file.filename}` : null
     });
-    res.status(201).json({ message: "Post created", post });
-  } catch (error) {
-    res.status(500).json({ error: "Server error" });
+    res.status(201).json({message: "Post created"});
+  } catch (err) {
+    console.log(err);
+    
+    res.status(400).json({ error: err.message });
   }
 };
 

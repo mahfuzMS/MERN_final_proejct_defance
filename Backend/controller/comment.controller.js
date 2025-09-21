@@ -1,6 +1,7 @@
-import Comment from '../models/comment.model.js';
+const { errorHandler } = require("../utilities/error");
 
-export const createComment = async (req, res, next) => {
+
+ const createComment = async (req, res, next) => {
   try {
     const { content, postId, userId } = req.body;
 
@@ -23,7 +24,7 @@ export const createComment = async (req, res, next) => {
   }
 };
 
-export const getPostComments = async (req, res, next) => {
+ const getPostComments = async (req, res, next) => {
   try {
     const comments = await Comment.find({ postId: req.params.postId }).sort({
       createdAt: -1,
@@ -34,7 +35,7 @@ export const getPostComments = async (req, res, next) => {
   }
 };
 
-export const likeComment = async (req, res, next) => {
+ const likeComment = async (req, res, next) => {
   try {
     const comment = await Comment.findById(req.params.commentId);
     if (!comment) {
@@ -55,7 +56,7 @@ export const likeComment = async (req, res, next) => {
   }
 };
 
-export const editComment = async (req, res, next) => {
+ const editComment = async (req, res, next) => {
   try {
     const comment = await Comment.findById(req.params.commentId);
     if (!comment) {
@@ -80,7 +81,7 @@ export const editComment = async (req, res, next) => {
   }
 };
 
-export const deleteComment = async (req, res, next) => {
+ const deleteComment = async (req, res, next) => {
   try {
     const comment = await Comment.findById(req.params.commentId);
     if (!comment) {
@@ -98,8 +99,8 @@ export const deleteComment = async (req, res, next) => {
   }
 };
 
-export const getcomments = async (req, res, next) => {
-  if (!req.user.isAdmin)
+ const getcomments = async (req, res, next) => {
+  if (!req.userId)
     return next(errorHandler(403, 'You are not allowed to get all comments'));
   try {
     const startIndex = parseInt(req.query.startIndex) || 0;
@@ -123,4 +124,14 @@ export const getcomments = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+
+module.exports = {
+  createComment,
+  getPostComments,
+  likeComment,
+  editComment,
+  deleteComment,
+  getcomments,
 };

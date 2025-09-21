@@ -18,7 +18,6 @@ const Navbar = () => {
   const [activeLink, setActiveLink] = useState("home");
   const [isScrolled, setIsScrolled] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -32,7 +31,8 @@ const Navbar = () => {
     { name: "Contact", path: "/contact" },
   ];
 
-  const { user } = UseAuth();
+  const { user, logout } = UseAuth();
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -174,7 +174,7 @@ const Navbar = () => {
                         Settings
                       </Link>
                       <button
-                        onClick={() => setIsLoggedIn(false)}
+                        onClick={() => logout()}
                         className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-red-500"
                       >
                         Logout
